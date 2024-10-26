@@ -65,7 +65,8 @@ public class Upload extends HttpServlet {
 
         // Faz a gravação do arquivo no destino
         try (
-                InputStream input = filePart.getInputStream(); OutputStream output = new FileOutputStream(filePath)) {
+                InputStream input = filePart.getInputStream();
+                OutputStream output = new FileOutputStream(filePath)) {
             int length;
             byte[] buffer = new byte[1024];
             while ((length = input.read(buffer)) > 0) {

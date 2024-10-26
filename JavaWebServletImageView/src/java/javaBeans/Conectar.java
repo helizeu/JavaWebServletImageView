@@ -51,9 +51,10 @@ Pela excessão da clausula try. */
             ps = con.prepareStatement(sql);
             ps.executeUpdate(); // Executa o comando SQL dentro do servidor 
 
-           sql = "create table usuarios (pkuser int AUTO_INCREMENT, nome varchar(40),"
+           sql = "create table if not exists usuarios (pkuser int AUTO_INCREMENT, "
+                   + "nome varchar(40),"
                 + "email varchar(40), celular varchar(15), senha varchar(11), "
-                   + "nivel varchar(20), foto varchar(20),  primary key (pkuser) )";
+                   + "nivel varchar(20), foto longblob,  primary key (pkuser) )";
            ps = con.prepareStatement(sql);
            ps.executeUpdate();
             

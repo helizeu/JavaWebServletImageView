@@ -23,7 +23,8 @@
             <form action="../CadUser" name = formCad method=post enctype="multipart/form-data" >
                 <table border="1" >
                     <tr><td align = center> ** Foto Atualizada ** </td></tr>
-                    <tr><td align = center> <img src="<%=minhafoto%>" style="height: 100px;width: 100px;" alt="Foto" ></td></tr>
+                    <tr><td align = center> <img src="<%
+                        if (user.imagemBase64 != null) out.print(user.imagemBase64);%>" style="height: 100px;width: 100px;" alt="Foto" ></td></tr>
                     <tr><td> <input type="file" name="arquivo" id = "arq"></td></tr>
                 </table>
 

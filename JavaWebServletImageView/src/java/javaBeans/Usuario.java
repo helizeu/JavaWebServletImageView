@@ -1,5 +1,9 @@
 package javaBeans;
+import com.mysql.cj.jdbc.Blob;
+import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Base64;
+
 public class Usuario extends Conectar {
     public int pkuser;
     public String nome;
@@ -7,7 +11,11 @@ public class Usuario extends Conectar {
     public String celular;
     public String senha;
     public String nivel;
-   
+
+    public InputStream foto;// Campo de armazenamento da imagem
+    public long tamanho ; 
+    public String imagemBase64; // Armazenará o caminho da imagem puxada do banco
+
     public boolean getLogin() {
         this.statusSQL = null;
         try {
@@ -21,6 +29,14 @@ public class Usuario extends Conectar {
                 email = tab.getString("email");
                 pkuser = tab.getInt("pkuser");
                 nivel = tab.getString("nivel");
+
+                Blob blob = (Blob) tab.getBlob("foto");
+                if (blob == null) {
+                    imagemBase64 = null;
+                } else {
+                    byte[] imageBytes = blob.getBytes(1, (int) blob.length());
+                    imagemBase64 = Base64.getEncoder().encodeToString(imageBytes);
+                }               
              
                 return true;
             }
@@ -29,7 +45,7 @@ public class Usuario extends Conectar {
                 email = "";
                 pkuser = 0;
                 nivel = nivelMaster;
-           
+
                 return true;
             }
         } catch (SQLException ex) {
@@ -40,8 +56,8 @@ public class Usuario extends Conectar {
 
     public void incluir() {
         try {
-            sql = "insert into usuarios ( nome, email, celular, senha, nivel ) "
-                    + "values (?,?,?,?,?) ";
+            sql = "insert into usuarios ( nome, email, celular, senha, nivel, foto ) "
+                    + "values (?,?,?,?,?,?) ";
 
             ps = con.prepareStatement(sql); // prepara SQL
             ps.setString(1, nome); // Configura Parametros
@@ -49,6 +65,7 @@ public class Usuario extends Conectar {
             ps.setString(3, celular); // Configura Parametros
             ps.setString(4, senha); // Configura Parametros
             ps.setString(5, nivel); // Configura Parametros
+            ps.setBlob(6, foto, tamanho);
 
             ps.executeUpdate(); // executa comando SQL
             this.statusSQL = null; // armazena null se deu tudo certo
@@ -60,10 +77,8 @@ public class Usuario extends Conectar {
     public void alterar() {
         try {
             sql = "update usuarios set nome=?, email=?, celular=?,"
-                    + " senha=?, nivel=? where ucase(trim(email))=ucase(trim(?)) ";
-            
-            
-            
+                    + " senha=?, nivel=?, foto=? where ucase(trim(email))=ucase(trim(?)) ";
+
             ps = con.prepareStatement(sql); // prepara SQL
             ps.setString(1, nome); // Configura Parametros
             ps.setString(2, email); // Configura Parametros
@@ -71,10 +86,11 @@ public class Usuario extends Conectar {
             ps.setString(4, senha); // Configura Parametros
             ps.setString(5, nivel); // Configura Parametros
 
-            ps.setString(6, email); // Configura Parametros
+            ps.setBlob(6, foto, tamanho); // Adiciiona a foto
+
+            ps.setString(7, email); // Configura Parametros
+
             ps.executeUpdate(); // executa comando SQL
-            
-              
             this.statusSQL = null; // armazena null se deu tudo certo
         } catch (SQLException ex) {
             this.statusSQL = "Erro ao Alterar usuario ! <br> " + ex.getMessage();
@@ -94,17 +110,22 @@ public class Usuario extends Conectar {
     }
 
     public void gravar() {
-    try {   sql = "select * from usuarios where ucase(trim(email)) = ucase(trim(?))";
+        try {
+            sql = "select * from usuarios where ucase(trim(email)) = ucase(trim(?))";
             ps = con.prepareStatement(sql); // prepara SQL
             ps.setString(1, email); // Configura Parametros
             tab = ps.executeQuery();
-            if (tab.next())   alterar();
-            else              incluir();
-            this.statusSQL = null; 
+            if (tab.next()) {
+                alterar();
+            } else {
+                incluir();
+            }
+            this.statusSQL = null;
         } catch (SQLException ex) {
             this.statusSQL = sql + " <br> Erro ao gravar o registro ! <br> " + ex.getMessage();
         }
     }
+
     public boolean buscarEmail() {
         try {
             sql = "select * from usuarios where ucase(trim(email)) = ucase(trim(?))";
@@ -117,7 +138,15 @@ public class Usuario extends Conectar {
                 celular = tab.getString("celular");
                 senha = tab.getString("senha");
                 nivel = tab.getString("nivel");
-             
+
+               Blob blob = (Blob) tab.getBlob("foto");
+                if (blob == null) {
+                    imagemBase64 = null;
+                } else {
+                    byte[] imageBytes = blob.getBytes(1, (int) blob.length());
+                    imagemBase64 = Base64.getEncoder().encodeToString(imageBytes);
+                }
+
                 return true;
             }
             this.statusSQL = null; // armazena null se deu tudo certo
