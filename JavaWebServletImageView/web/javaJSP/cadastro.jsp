@@ -3,14 +3,21 @@
 <%  
     String email = (String) session.getAttribute("email");
     if (email == null)  response.sendRedirect("../index.html");
- 
-    String minhafoto = "";
-    boolean existeUser = false;
 
+    boolean existeUser = false;
     Usuario user = new Usuario();
     user.email = email;
-    if ( user.buscarEmail()) existeUser = true;
-%>
+    if ( user.buscarEmail()) existeUser = true ;
+    
+/*
+   Este scriptlet está configurado para carregar somente arquivos do tipo jpeg
+   Caso queira outros formatos de arquivos irá precisar alterar a tag SRC  
+   para imagem formato jpeg base64 <img src="data:image/jpeg;base64,foto.jpg">
+   para imagem formato png  base64 <img src="data:image/png;base64,foto.png">
+   Verifique os tipos que o servidor TomCat suporta de imagens 
+   O tamanho máximo é 2mb se quiser mais terá que configurar o arquivo web.xml
+*/
+%>         
 
 
 <html lang = "pt-br"><head>
@@ -22,9 +29,12 @@
 
             <form action="../CadUser" name = formCad method=post enctype="multipart/form-data" >
                 <table border="1" >
-                    <tr><td align = center> ** Foto Atualizada ** </td></tr>
-                    <tr><td align = center> <img src="<%
-                        if (user.imagemBase64 != null) out.print(user.imagemBase64);%>" style="height: 100px;width: 100px;" alt="Foto" ></td></tr>
+                    <tr><td align = center> ** FOTO ( Formato.JPG até 2MB ) ** </td></tr>
+                    <tr><td align = center> <img src="data:image/jpeg;base64,<%
+                    
+            if (user.imagemBase64 != null) out.print(user.imagemBase64);
+                    
+                    %>" style="height: 100px;width: 100px;" alt="Foto" ></td></tr>
                     <tr><td> <input type="file" name="arquivo" id = "arq"></td></tr>
                 </table>
 

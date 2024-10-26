@@ -1,9 +1,7 @@
 package javaBeans;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import javaBeans.Usuario;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -17,52 +15,54 @@ import javax.servlet.http.Part;
 @MultipartConfig
 public class CadUser extends HttpServlet {
 
-    String statusSQL = null;
     String sHTML = "";
-    
+    String statusSQL = "";
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
         HttpSession session = request.getSession(true);
-        if (String.valueOf(session.getAttribute("nome")) == null) 
+        if (String.valueOf(session.getAttribute("nome")) == null) {
             response.sendRedirect("../index.html");
-        
+        }
+
         Usuario user = new Usuario(); // Instancia o objeto Usuario
         user.email = request.getParameter("email");
         user.nome = request.getParameter("nome");
         user.celular = request.getParameter("celular");
         user.senha = request.getParameter("senha");
         user.nivel = request.getParameter("nivel");
-               
+
         Part part = request.getPart("arquivo");
         InputStream arquivo = part.getInputStream();
-        user.foto = arquivo;
-        user.tamanho = part.getSize();
-        
 
-        if ( request.getParameter("gravar") != null) user.gravar();
- 
-        if ( request.getParameter("deletar") != null ) {
-             user.deletar();
-             session.invalidate();
+        user.tamanho = part.getSize();
+        user.foto = arquivo;
+
+        if (request.getParameter("gravar") != null) {
+            user.gravar();
+            if (user.statusSQL == null) {
+                statusSQL = "Registro Alterado com Sucesso !";
+            }
         }
-    
-        statusSQL = user.statusSQL;
-            
+
+        if (request.getParameter("deletar") != null) {
+            user.deletar();
+            session.invalidate();
+            statusSQL = "Você deletou seu usuário, sua sessão foi fechada!";
+        }
+
         //String url = request.getContextPath() + "/javaJSP/cadastro.jsp";
         //if ( user.buscarEmail() ) {
-     
         //    response.sendRedirect(url);
         //}
-
         try (PrintWriter out = response.getWriter()) {
             sHTML = "<!DOCTYPE html>";
             sHTML += "<html><head><title>Cadastro de Usuários</title>";
             sHTML += "</head><body style=\"background-color: greenyellow;\">";
             sHTML += "<br><br><center> " + statusSQL + "<br> ";
-            sHTML += "A sessão foi finalizada por que você deletou seu usuário..!<br>";
-            sHTML += "<a href ='" + request.getContextPath() + "/" + "index.html";
+            sHTML += "<a href ='" + request.getContextPath() + "/" + "javaJSP/cadastro.jsp";
             sHTML += "'> Voltar </a></center>";
             sHTML += "</body></html>";
             out.print(sHTML);
